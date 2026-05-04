@@ -77,4 +77,39 @@ class Profesional(models.Model):
     def nombre_completo(self):
         return f"{self.nombres} {self.apellidos}"
     
-    
+class HorarioDisponible(models.Model):
+    """Franjas horarias semanales en que un profesional atiende citas"""
+ 
+    DIA_CHOICES = [
+        (0, 'Lunes'),
+        (1, 'Martes'),
+        (2, 'Miércoles'),
+        (3, 'Jueves'),
+        (4, 'Viernes'),
+        (5, 'Sábado'),
+        (6, 'Domingo'),
+    ]
+ 
+    profesional = models.ForeignKey(
+        Profesional,
+        on_delete=models.CASCADE,
+        related_name='horarios',
+        verbose_name="Profesional",
+    )
+    dia_semana = models.PositiveSmallIntegerField(choices=DIA_CHOICES, verbose_name="Día de la Semana")
+    hora_inicio = models.TimeField(verbose_name="Hora de Inicio")
+    hora_fin = models.TimeField(verbose_name="Hora de Fin")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+ 
+    class Meta:
+        verbose_name = "Horario Disponible"
+        verbose_name_plural = "Horarios Disponibles"
+        ordering = ['profesional', 'dia_semana', 'hora_inicio']
+        unique_together = ('profesional', 'dia_semana', 'hora_inicio')
+ 
+    def __str__(self):
+        return (
+            f"{self.profesional.nombre_completo} — "
+            f"{self.get_dia_semana_display()} "
+            f"{self.hora_inicio.strftime('%H:%M')} a {self.hora_fin.strftime('%H:%M')}"
+        )
