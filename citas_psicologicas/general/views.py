@@ -1,3 +1,8 @@
 from django.shortcuts import render
 
-# Create your views here.
+# -------------------------------------------------------------
+# Página principal
+# -------------------------------------------------------------
+def main_content_page(request):
+    """Renderiza la página principal del sistema."""
+    return render(request, 'general/main_page_citas.html')
