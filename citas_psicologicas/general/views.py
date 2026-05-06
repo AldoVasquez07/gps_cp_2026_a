@@ -72,3 +72,17 @@ def login_inicio_sesion(request):
         {'mensaje': mensaje}
     )
 
+
+# -------------------------------------------------------------
+# Cerrar sesión general
+# -------------------------------------------------------------
+def logout_view(request):
+    """Cierra la sesión actual y redirige al login general."""
+    # Limpia la sesión y desconecta al usuario
+    logout(request)
+
+    # (Opcional) Limpia cualquier dato adicional guardado en la sesión
+    request.session.flush()
+
+    # Redirige al login principal
+    return redirect('general:login_inicio_sesion')
