@@ -244,3 +244,11 @@ def login_registro_profesional(request):
         }
     )
 
+
+
+# -------------------------------------------------------------
+# Registro de organizaciones
+# -------------------------------------------------------------
+def login_registro_organizacion(request):
+    """Renderiza el formulario de registro de organizaciones (no implementado aún)."""
+    return render(request, 'general/login/registro/login_registrar_organizacion.html')
