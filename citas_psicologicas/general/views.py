@@ -149,3 +149,98 @@ def login_registro_cliente(request):
             'mensaje': mensaje
         }
     )
+
+
+
+# -------------------------------------------------------------
+# Registro de profesionales
+# -------------------------------------------------------------
+def login_registro_profesional(request):
+    """Permite registrar un nuevo usuario con rol de profesional."""
+
+    # Obtener datos para los campos de selección
+    ciudades = Ciudad.objects.filter(flag=True).order_by('nombre')
+    profesiones = Profesion.objects.filter(flag=True).order_by('nombre')
+    mensaje = None
+    
+    # Agregar lista de especialidades en formato JSON para cada profesión
+    for profesion in profesiones:
+        profesion.especialidades_json = json.dumps(
+            list(profesion.especialidades.values('id', 'nombre'))
+        )
+    
+    if request.method == 'POST':
+        form_user = RegistrarUsuarioForm(request.POST)
+        form_aspectos_negocio = RegistrarAspectosNegocioForm(request.POST)
+        
+        if form_user.is_valid() and form_aspectos_negocio.is_valid():
+            # Crear instancia de usuario sin guardar todavía
+            nuevo_usuario = form_user.save(commit=False)
+            nuevo_usuario.set_password(form_user.cleaned_data['password'])
+            nuevo_usuario.rol = Rol.objects.get(nombre='profesional')
+            nuevo_usuario.ciudad = Ciudad.objects.get(id=request.POST.get('ciudad_profesional'))
+            
+            # Crear instancia de aspectos de negocio
+            nuevos_aspectos_negocio = form_aspectos_negocio.save(commit=False)
+
+            try:
+                # Validar y guardar entidades relacionadas
+                nuevo_usuario.clean()
+                nuevo_usuario.save()
+                
+                nuevos_aspectos_negocio.clean()
+                nuevos_aspectos_negocio.save()
+                
+                # Asociar al modelo Profesional
+                nuevo_profesional = Profesional(
+                    usuario=nuevo_usuario,
+                    especialidad=Especialidad.objects.filter(
+                        id=request.POST.get('especialidad_profesional')
+                    ).first(),
+                    aspectos_negocio=nuevos_aspectos_negocio
+                )
+                
+                nuevo_profesional.save()
+
+            except (Exception, ValueError, ValidationError) as ex:
+                # Manejo de errores de validación o guardado
+                return render(
+                    request,
+                    'general/login/registro/login_registrar_profesional.html',
+                    {
+                        'ciudades': ciudades,
+                        'profesiones': profesiones,
+                        'mensaje': str(ex),
+                        'form_user': form_user,
+                        'form_aspectos_negocio': form_aspectos_negocio
+                    }
+                )
+        
+            # Registro exitoso → redirigir al inicio de sesión
+            return redirect('general:login_inicio_sesion')
+
+        else:
+            # Consolidar errores de ambos formularios
+            mensaje = ErrorDict()
+            mensaje.update(form_user.errors)
+            mensaje.update(form_aspectos_negocio.errors)
+
+    else:
+        # Inicialización de formularios vacíos
+        form_user = RegistrarUsuarioForm()
+        form_aspectos_negocio = RegistrarAspectosNegocioForm()
+        mensaje = None
+    
+    # Renderizar plantilla con contexto completo
+    return render(
+        request,
+        'general/login/registro/login_registrar_profesional.html',
+        {
+            'ciudades': ciudades,
+            'profesiones': profesiones,
+            'mensaje': mensaje,
+            'form_user': form_user,
+            'form_aspectos_negocio': form_aspectos_negocio
+        }
+    )
+
