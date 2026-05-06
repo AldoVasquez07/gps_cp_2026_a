@@ -86,3 +86,66 @@ def logout_view(request):
 
     # Redirige al login principal
     return redirect('general:login_inicio_sesion')
+
+
+# -------------------------------------------------------------
+# Registro de clientes
+# -------------------------------------------------------------
+def login_registro_cliente(request):
+    """
+    Permite registrar un nuevo usuario con rol de cliente.
+    Usa la misma estructura que el registro de profesional,
+    pero adaptada a la lógica más simple de clientes.
+    """
+    ciudades = Ciudad.objects.filter(flag=True).order_by('nombre')
+    mensaje = None
+
+    if request.method == 'POST':
+        # Obtener contraseñas desde el formulario
+        password = request.POST.get('contrasena_cliente')
+        confirm_password = request.POST.get('confirmar_contrasena_cliente')
+
+        # Verificar coincidencia
+        if password != confirm_password:
+            mensaje = "Las contraseñas no coinciden."
+        else:
+            try:
+                # Crear instancia del usuario (sin guardar aún)
+                nuevo_usuario = Usuario(
+                    first_name=request.POST.get('nombre_cliente'),
+                    apellido_paterno=request.POST.get('apellido_paterno_cliente'),
+                    apellido_materno=request.POST.get('apellido_materno_cliente'),
+                    email=request.POST.get('correo_cliente'),
+                    fecha_nacimiento=request.POST.get('fecha_nacimiento_cliente'),
+                    documento_identidad=request.POST.get('documento_identidad_cliente'),
+                    telefono=request.POST.get('telefono_cliente'),
+                    ciudad=Ciudad.objects.filter(id=request.POST.get('ciudad_cliente')).first(),
+                    rol=Rol.objects.filter(nombre='cliente').first()
+                )
+
+                # Asignar contraseña correctamente (usa hashing)
+                nuevo_usuario.set_password(password)
+
+                # Validar y guardar usuario
+                nuevo_usuario.clean()
+                nuevo_usuario.save()
+
+                # Crear objeto Cliente asociado
+                nuevo_cliente = Cliente(usuario=nuevo_usuario)
+                nuevo_cliente.save()
+
+                # Redirigir al inicio de sesión
+                return redirect('general:login_inicio_sesion')
+
+            except Exception as ex:
+                mensaje = str(ex)
+
+    # Si GET o error, renderizar nuevamente con contexto
+    return render(
+        request,
+        'general/login/registro/login_registrar_cliente.html',
+        {
+            'ciudades': ciudades,
+            'mensaje': mensaje
+        }
+    )
