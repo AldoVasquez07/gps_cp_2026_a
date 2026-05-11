@@ -33,3 +33,31 @@ class Pais(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Ciudad(models.Model):
+    nombre = models.CharField(max_length=150)
+    pais = models.ForeignKey(Pais, on_delete=models.CASCADE, related_name='ciudades')
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+    
+    flag = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre
