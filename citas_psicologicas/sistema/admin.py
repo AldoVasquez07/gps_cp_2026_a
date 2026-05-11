@@ -64,3 +64,32 @@ class RegistroAccesoAdmin(admin.ModelAdmin):
     search_fields = ('usuario__email', 'accion', 'ip')
     list_filter = ('accion', 'fecha')
     ordering = ('-fecha',)
+
+# -------------------------------------------------------------------
+# ASPECTOS DE NEGOCIO + DISPONIBILIDAD INLINE
+# -------------------------------------------------------------------
+
+class DisponibilidadInline(admin.TabularInline):
+    model = Disponibilidad
+    extra = 1
+    ordering = ('dia', 'hora_inicio')
+
+
+@admin.register(AspectosNegocio)
+class AspectosNegocioAdmin(admin.ModelAdmin):
+    list_display = (
+        'direccion', 'experiencia', 'permite_presencial',
+        'permite_virtual', 'precio_presencial', 'precio_online', 'flag'
+    )
+    search_fields = ('direccion', 'experiencia')
+    list_filter = ('permite_presencial', 'permite_virtual', 'flag')
+    ordering = ('direccion',)
+    inlines = [DisponibilidadInline]
+
+
+@admin.register(Disponibilidad)
+class DisponibilidadAdmin(admin.ModelAdmin):
+    list_display = ('aspectos_negocio', 'dia', 'hora_inicio', 'hora_fin')
+    search_fields = ('dia', 'aspectos_negocio__direccion')
+    list_filter = ('dia',)
+    ordering = ('aspectos_negocio', 'dia', 'hora_inicio')
