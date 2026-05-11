@@ -45,3 +45,22 @@ class UsuarioAdmin(admin.ModelAdmin):
     list_filter = ('rol', 'ciudad', 'flag')
     ordering = ('email',)
     filter_horizontal = ()  # puedes agregar grupos o permisos si los usas
+
+# -------------------------------------------------------------------
+# LOGS Y REGISTROS DE ACCESO
+# -------------------------------------------------------------------
+
+@admin.register(LogProcesos)
+class LogProcesosAdmin(admin.ModelAdmin):
+    list_display = ('proceso', 'usuario', 'fecha', 'flag')
+    search_fields = ('proceso', 'mensaje', 'usuario__email')
+    list_filter = ('flag', 'fecha')
+    ordering = ('-fecha',)
+
+
+@admin.register(RegistroAcceso)
+class RegistroAccesoAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'accion', 'fecha', 'ip')
+    search_fields = ('usuario__email', 'accion', 'ip')
+    list_filter = ('accion', 'fecha')
+    ordering = ('-fecha',)
