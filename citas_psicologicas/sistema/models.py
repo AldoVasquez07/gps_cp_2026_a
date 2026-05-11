@@ -177,3 +177,84 @@ class RegistroAcceso(models.Model):
     def __str__(self):
         return f"{self.usuario.email} - {self.accion} - {self.fecha}"
 
+class AspectosNegocio(models.Model):
+    direccion = models.CharField(max_length=255, blank=True)
+    experiencia = models.TextField(blank=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    hora_apertura = models.TimeField(null=True, blank=True)
+    hora_cierre = models.TimeField(null=True, blank=True)
+
+    permite_presencial = models.BooleanField(default=False)
+    permite_virtual = models.BooleanField(default=False)
+
+    # CAMPOS FALTANTES (AGREGAR)
+    precio_presencial = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    precio_online = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    flag = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.direccion or "Aspectos Negocio"
+    
+    
+class Disponibilidad(models.Model):
+    aspectos_negocio = models.ForeignKey(
+        AspectosNegocio,
+        on_delete=models.CASCADE,
+        related_name='disponibilidades'
+    )
+    dia = models.CharField(
+        max_length=15,
+        choices=[
+            ("lunes", "Lunes"),
+            ("martes", "Martes"),
+            ("miércoles", "Miércoles"),
+            ("jueves", "Jueves"),
+            ("viernes", "Viernes"),
+            ("sábado", "Sábado"),
+            ("domingo", "Domingo"),
+        ]
+    )
+    hora_inicio = models.TimeField()
+    hora_fin = models.TimeField()
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    def __str__(self):
+        return f"{self.dia}: {self.hora_inicio.strftime('%H:%M')} - {self.hora_fin.strftime('%H:%M')}"
