@@ -61,3 +61,96 @@ class Ciudad(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Rol(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+    
+    flag = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class Usuario(AbstractUser):
+    apellido_paterno = models.CharField(max_length=150, blank=True)
+    apellido_materno = models.CharField(max_length=150, blank=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True)
+    documento_identidad = models.CharField(max_length=20, unique=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    ciudad = models.ForeignKey(Ciudad, on_delete=models.SET_NULL, null=True, blank=True)
+    calificacion = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+    
+    flag = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f'{self.first_name} {self.apellido_paterno} {self.apellido_materno}'
+    
+
+    def clean(self):
+        super().clean()
+        
+        if Usuario.objects.filter(documento_identidad=self.documento_identidad).exclude(id=self.id).exists():
+            raise ValidationError("El documento de identidad ya está en uso.")
+        
+        if Usuario.objects.filter(email=self.email).exclude(id=self.id).exists():
+            raise ValidationError("El correo electrónico ya está en uso.")
+
+        if isinstance(self.fecha_nacimiento, str):
+            self.fecha_nacimiento = datetime.strptime(self.fecha_nacimiento, "%Y-%m-%d").date()
+
+        if self.fecha_nacimiento and self.fecha_nacimiento > timezone.now().date():
+            raise ValidationError("La fecha de nacimiento no puede ser futura.")
+    
+        
+    def save(self, *args, **kwargs):
+        if not self.username:
+            self.username = self.email
+        super().save(*args, **kwargs)
+        
+    def get_full_name(self):
+        nombre = self.first_name or ""
+        ap_paterno = self.apellido_paterno or ""
+        ap_materno = self.apellido_materno or ""
+
+        return f"{nombre} {ap_paterno} {ap_materno}".strip()
+
