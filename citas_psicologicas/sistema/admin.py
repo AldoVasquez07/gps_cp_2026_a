@@ -30,3 +30,18 @@ class RolAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'descripcion', 'flag', 'created_date')
     search_fields = ('nombre',)
     ordering = ('nombre',)
+
+# -------------------------------------------------------------------
+# USUARIO PERSONALIZADO
+# -------------------------------------------------------------------
+
+@admin.register(Usuario)
+class UsuarioAdmin(admin.ModelAdmin):
+    list_display = (
+        'email', 'first_name', 'apellido_paterno', 'apellido_materno',
+        'documento_identidad', 'rol', 'ciudad', 'flag'
+    )
+    search_fields = ('email', 'first_name', 'apellido_paterno', 'documento_identidad')
+    list_filter = ('rol', 'ciudad', 'flag')
+    ordering = ('email',)
+    filter_horizontal = ()  # puedes agregar grupos o permisos si los usas
