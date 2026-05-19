@@ -1,4 +1,22 @@
-from django.shortcuts import render
+# general/views.py
+# -------------------------------------------------------------
+# Vistas principales del módulo "general".
+# Incluye las funciones para:
+# - Mostrar la página principal.
+# - Seleccionar tipo de usuario.
+# - Iniciar sesión.
+# - Registrar clientes, profesionales y organizaciones.
+# -------------------------------------------------------------
+
+from django.shortcuts import render, redirect
+from sistema.models import Ciudad, Usuario, Rol, AspectosNegocio
+from cliente.models import Cliente
+from profesional.models import Profesion, Especialidad, Profesional
+from sistema.forms import RegistrarUsuarioForm, RegistrarAspectosNegocioForm
+import json
+from django.forms.utils import ErrorDict
+from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
 
 # -------------------------------------------------------------
 # Página principal
@@ -12,7 +30,7 @@ def main_content_page(request):
 # Selección del tipo de usuario
 # -------------------------------------------------------------
 def seleccion_tipo_usuario(request):
-    """Muestra la página para elegir el tipo de usuario (cliente, profesional)."""
+    """Muestra la página para elegir el tipo de usuario (cliente, profesional, organización)."""
     return render(request, 'general/seleccion_tipo_usuario.html')
 
 
@@ -151,7 +169,6 @@ def login_registro_cliente(request):
     )
 
 
-
 # -------------------------------------------------------------
 # Registro de profesionales
 # -------------------------------------------------------------
@@ -243,7 +260,6 @@ def login_registro_profesional(request):
             'form_aspectos_negocio': form_aspectos_negocio
         }
     )
-
 
 
 # -------------------------------------------------------------

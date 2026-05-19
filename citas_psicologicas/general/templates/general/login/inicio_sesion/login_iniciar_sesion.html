@@ -1,0 +1,70 @@
+{% extends 'general/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'general/css/login/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <!-- Login Form -->
+        <div id="loginForm" class="form-container">
+            <div class="logo">
+                <h1>Bienvenido</h1>
+                <p>Inicia sesión en tu cuenta</p>
+            </div>
+            <form method="POST" action="{% url 'general:login_inicio_sesion' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" name="email" placeholder="Correo electrónico" required>
+                    <div class="input-highlight"></div>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Contraseña" required>
+                    <div class="input-highlight"></div>
+                </div>
+                <button type="submit" class="btn">
+                    <span class="btn-text">Iniciar Sesión</span>
+                </button>
+            </form>
+            <div class="toggle-link">
+                <a href="{% url 'general:seleccion_tipo_usuario' %}">¿No tienes cuenta? Regístrate</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if mensaje %}
+<div id="popupError" class="popup">
+    <div class="popup-content">
+        <h3>Error de inicio de sesión</h3>
+        <p>{{ mensaje }}</p>
+        <button id="popupClose">Cerrar</button>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const popup = document.getElementById("popupError");
+    const closeBtn = document.getElementById("popupClose");
+
+    if (popup) {
+        popup.classList.add("show");
+        closeBtn.addEventListener("click", () => {
+            popup.classList.remove("show");
+        });
+    }
+});
+</script>
+
+<script src="{% static 'general/js/login/inicio_sesion/login_iniciar_sesion.js' %}"></script>
+
+{% endblock %}
