@@ -5,6 +5,7 @@ from .models import (
     AspectosNegocio, Disponibilidad
 )
 
+
 # -------------------------------------------------------------------
 # MODELOS BÁSICOS
 # -------------------------------------------------------------------
@@ -31,6 +32,7 @@ class RolAdmin(admin.ModelAdmin):
     search_fields = ('nombre',)
     ordering = ('nombre',)
 
+
 # -------------------------------------------------------------------
 # USUARIO PERSONALIZADO
 # -------------------------------------------------------------------
@@ -45,6 +47,7 @@ class UsuarioAdmin(admin.ModelAdmin):
     list_filter = ('rol', 'ciudad', 'flag')
     ordering = ('email',)
     filter_horizontal = ()  # puedes agregar grupos o permisos si los usas
+
 
 # -------------------------------------------------------------------
 # LOGS Y REGISTROS DE ACCESO
@@ -64,6 +67,7 @@ class RegistroAccesoAdmin(admin.ModelAdmin):
     search_fields = ('usuario__email', 'accion', 'ip')
     list_filter = ('accion', 'fecha')
     ordering = ('-fecha',)
+
 
 # -------------------------------------------------------------------
 # ASPECTOS DE NEGOCIO + DISPONIBILIDAD INLINE

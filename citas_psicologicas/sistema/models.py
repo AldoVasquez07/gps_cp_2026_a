@@ -34,6 +34,7 @@ class Pais(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Ciudad(models.Model):
     nombre = models.CharField(max_length=150)
     pais = models.ForeignKey(Pais, on_delete=models.CASCADE, related_name='ciudades')
@@ -61,6 +62,7 @@ class Ciudad(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -154,6 +156,8 @@ class Usuario(AbstractUser):
 
         return f"{nombre} {ap_paterno} {ap_materno}".strip()
 
+
+
 class LogProcesos(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     proceso = models.CharField(max_length=250)
@@ -176,6 +180,7 @@ class RegistroAcceso(models.Model):
 
     def __str__(self):
         return f"{self.usuario.email} - {self.accion} - {self.fecha}"
+
 
 class AspectosNegocio(models.Model):
     direccion = models.CharField(max_length=255, blank=True)
