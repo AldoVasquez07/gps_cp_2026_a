@@ -1,0 +1,117 @@
+{% extends 'cliente/base_home.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'cliente/css/bandeja_mensaje.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- MAIN -->
+<main>
+	<div class="bandeja-container">
+		<div class="header-section">
+			<h1 class="page-title">Bandeja de mensajes</h1>
+			<button class="btn-nuevo-mensaje">
+				<i class='bx bx-plus'></i>
+				Nuevo mensaje
+			</button>
+		</div>
+
+		<!-- Messages List -->
+		<div class="messages-container">
+
+			{% for conv in conversaciones %}
+			<div class="message-card {% if conv.unread %}unread{% endif %}" data-id="{{ conv.id }}">
+
+				<div class="message-header">
+					<div class="professional-info">
+						<div class="professional-avatar">
+							<i class='bx bx-user'></i>
+						</div>
+
+						<div class="professional-details">
+							<h3 class="professional-name">{{ conv.nombre }}</h3>
+							<span class="professional-specialty">{{ conv.especialidad }}</span>
+						</div>
+					</div>
+
+					<div class="message-meta">
+						<span class="message-date">{{ conv.fecha|timesince }} atrás</span>
+
+						{% if conv.unread %}
+						<span class="unread-badge">
+							<i class='bx bx-circle'></i>
+						</span>
+						{% endif %}
+					</div>
+				</div>
+
+				<div class="message-body">
+					<p class="message-preview">{{ conv.ultimo_mensaje }}</p>
+				</div>
+
+				<div class="message-footer">
+					<button class="btn-reply">
+						<i class='bx bx-reply'></i> Responder
+					</button>
+
+					<button class="btn-view-more">
+						Ver conversación completa <i class='bx bx-chevron-right'></i>
+					</button>
+				</div>
+
+			</div>
+			{% empty %}
+			<p style="padding: 20px; text-align:center;">No tienes mensajes aún.</p>
+			{% endfor %}
+
+		</div>
+
+	</div>
+</main>
+
+<!-- CONTENT -->
+
+<!-- Modal para nuevo mensaje -->
+<div id="nuevoMensajeModal" class="modal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h2>Nuevo Mensaje</h2>
+			<button class="close-modal">
+				<i class='bx bx-x'></i>
+			</button>
+		</div>
+		<div class="modal-body">
+			<form id="nuevoMensajeForm">
+				<div class="form-group">
+					<label>Profesional</label>
+					<select name="profesional" required>
+						<option value="">Seleccionar profesional...</option>
+
+						{% for p in profesionales %}
+						<option value="{{ p.id }}">
+							{{ p.usuario.first_name }} {{ p.usuario.apellido_paterno }} -
+							{{ p.especialidad.nombre }}
+						</option>
+						{% endfor %}
+
+					</select>
+
+				</div>
+				<div class="form-group">
+					<label>Mensaje</label>
+					<textarea name="mensaje" rows="6" placeholder="Escribe tu mensaje aquí..." required></textarea>
+				</div>
+				<div class="modal-actions">
+					<button type="button" class="btn-cancel">Cancelar</button>
+					<button type="submit" class="btn-submit">Enviar mensaje</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'cliente/js/bandeja_mensaje.js' %}"></script>
+{% endblock %}

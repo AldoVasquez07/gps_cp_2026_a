@@ -1,0 +1,281 @@
+{% extends 'cliente/base_home.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'cliente/css/profesionales.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- MAIN -->
+<main>
+	<!-- Mensajes de éxito/error -->
+	{% if messages %}
+		<div class="messages-container">
+			{% for message in messages %}
+				<div class="alert alert-{{ message.tags }}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+
+	<div class="professionals-container">
+		<div class="header-section">
+			<h1 class="page-title">Profesionales</h1>
+
+			<!-- Search and Filters -->
+			<div class="search-filter-bar">
+				<form method="GET" action="" class="filters-form">
+					<div class="search-box">
+						<i class='bx bx-search'></i>
+						<input type="text" name="search" placeholder="Buscar por nombre, especialidad..."
+							id="mainSearch" value="{{ search_value }}">
+					</div>
+
+					<div class="filters-group">
+						<!-- Especialidades desde BD -->
+						<select class="filter-select" name="especialidad" id="specialtyFilter">
+							<option value="">Todas las especialidades</option>
+							{% for esp in especialidades %}
+							<option value="{{ esp.id }}"
+								{% if esp.id|stringformat:"s" == especialidad_id %}selected{% endif %}>
+								{{ esp.nombre }}
+							</option>
+							{% endfor %}
+						</select>
+
+						<!-- Tipo de consulta -->
+						<select class="filter-select" name="tipo" id="typeFilter">
+							<option value="">Tipo de consulta</option>
+							<option value="presencial" {% if tipo == "presencial" %}selected{% endif %}>Presencial</option>
+							<option value="online" {% if tipo == "online" %}selected{% endif %}>Online</option>
+						</select>
+
+						<!-- Rating mínimo -->
+						<select class="filter-select" name="rating" id="ratingFilter">
+							<option value="">Calificación</option>
+							<option value="5" {% if rating_filter == "5" %}selected{% endif %}>5 estrellas</option>
+							<option value="4" {% if rating_filter == "4" %}selected{% endif %}>4+ estrellas</option>
+							<option value="3" {% if rating_filter == "3" %}selected{% endif %}>3+ estrellas</option>
+						</select>
+
+						<button type="submit" class="btn-clear-filters">
+							<i class='bx bx-search'></i>
+							Buscar
+						</button>
+
+						<a href="{% url 'cliente:profesionales_option' %}" class="btn-clear-filters">
+							<i class='bx bx-x'></i>
+							Limpiar
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Professionals Grid -->
+		<div class="professionals-grid" id="professionalsGrid">
+			{% for p in profesionales %}
+			<div class="professional-card" 
+				 data-specialty="{{ p.especialidad|lower }}" 
+				 data-rating="{{ p.rating_int }}"
+				 data-professional-id="{{ p.id }}"
+				 data-professional-name="{{ p.nombre }}"
+				 data-professional-specialty="{{ p.especialidad }}"
+				 data-professional-avatar="{{ p.foto }}"
+				 data-precio-presencial="{{ p.opciones.precio_presencial|default:'0' }}"
+				 data-precio-online="{{ p.opciones.precio_online|default:'0' }}"
+				 data-permite-presencial="{{ p.opciones.presencial|yesno:'true,false' }}"
+				 data-permite-online="{{ p.opciones.online|yesno:'true,false' }}"
+				 data-disponibilidades='{{ p.disponibilidad_completa|safe }}'
+				 data-types="{% if p.opciones.presencial %}presencial{% endif %}{% if p.opciones.presencial and p.opciones.online %},{% endif %}{% if p.opciones.online %}online{% endif %}">
+
+				<div class="card-header">
+					<div class="professional-avatar-large">
+						<img src="{{ p.foto }}" alt="{{ p.nombre }}">
+					</div>
+
+					<div class="professional-info-header">
+						<h3 class="professional-name">{{ p.nombre }}</h3>
+						<span class="professional-specialty">{{ p.especialidad }}</span>
+
+						<div class="rating-stars">
+							{% for i in "12345" %}
+								{% if forloop.counter <= p.rating_int %}
+									<i class='bx bxs-star'></i>
+								{% else %}
+									<i class='bx bx-star'></i>
+								{% endif %}
+							{% endfor %}
+							<span class="rating-count">{{ p.rating }} promedio</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="card-body">
+					<div class="consultation-types">
+						{% if p.opciones.presencial %}
+						<span class="type-badge presencial">
+							<i class='bx bx-building'></i> Presencial
+						</span>
+						{% endif %}
+						{% if p.opciones.online %}
+						<span class="type-badge online">
+							<i class='bx bx-video'></i> Online
+						</span>
+						{% endif %}
+					</div>
+
+					<div class="professional-address">
+						<i class='bx bx-map'></i>
+						<span>{{ p.direccion|default:"Sin dirección registrada" }}</span>
+					</div>
+
+					{% if p.opciones.precio_presencial %}
+					<div class="service-info">
+						<span class="service-label">Consulta Presencial</span>
+						<span class="service-price">S/ {{ p.opciones.precio_presencial }}</span>
+					</div>
+					{% endif %}
+
+					{% if p.opciones.precio_online %}
+					<div class="service-info">
+						<span class="service-label">Consulta Online</span>
+						<span class="service-price">S/ {{ p.opciones.precio_online }}</span>
+					</div>
+					{% endif %}
+				</div>
+
+				<div class="card-footer">
+					<h4>Próximos horarios disponibles:</h4>
+					<div class="availability-days">
+						{% if p.disponibilidad_preview %}
+							{% for slot in p.disponibilidad_preview %}
+							<span class="day-badge available">
+								{{ slot.dia }}<br>
+								{{ slot.fecha_display }}<br>
+								<small>{{ slot.hora }}</small>
+							</span>
+							{% endfor %}
+						{% else %}
+							<span class="day-badge">
+								Sin horarios<br>
+								disponibles
+							</span>
+						{% endif %}
+					</div>
+
+					<button class="btn-book-appointment" 
+							data-professional="{{ p.nombre }}"
+							data-professional-id="{{ p.id }}">
+						<i class='bx bx-calendar-plus'></i>
+						Agendar Cita
+					</button>
+				</div>
+			</div>
+			{% empty %}
+			<div class="empty-state">
+				<i class='bx bx-search-alt-2'></i>
+				<h3>No hay profesionales disponibles</h3>
+				<p>Intenta ajustar los filtros de búsqueda</p>
+			</div>
+			{% endfor %}
+		</div>
+
+		<!-- Empty State -->
+		<div class="empty-state" id="emptyState" style="display: none;">
+			<i class='bx bx-search-alt-2'></i>
+			<h3>No se encontraron profesionales</h3>
+			<p>Intenta ajustar los filtros de búsqueda</p>
+		</div>
+	</div>
+</main>
+{% endblock %}
+
+{% block modals %}
+<!-- MODAL AGENDAR CITA -->
+<div class="modal" id="appointmentModal">
+	<div class="modal-content modal-large">
+		<div class="modal-header">
+			<h3>Agendar Cita</h3>
+			<button class="modal-close" id="closeAppointment" type="button">
+				<i class='bx bx-x'></i>
+			</button>
+		</div>
+		<div class="modal-body">
+			<div class="appointment-professional-info">
+				<div class="professional-avatar-modal">
+					<img src="https://via.placeholder.com/64" alt="Professional" id="modalProfessionalAvatar">
+				</div>
+				<div>
+					<h4 id="modalProfessionalName">Nombre del Profesional</h4>
+					<p id="modalProfessionalSpecialty">Especialidad</p>
+				</div>
+			</div>
+
+			<form method="POST" class="appointment-form" id="appointmentForm">
+				{% csrf_token %}
+				<input type="hidden" name="profesional_id" id="hiddenProfessionalId">
+				
+				<div class="form-group">
+					<label>Tipo de consulta *</label>
+					<select class="form-control" name="tipo_consulta" id="consultationType" required>
+						<option value="">Selecciona el tipo</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Fecha *</label>
+					<select class="form-control" name="fecha" id="appointmentDate" required>
+						<option value="">Selecciona una fecha</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Hora *</label>
+					<select class="form-control" name="hora" id="appointmentTime" required>
+						<option value="">Primero selecciona una fecha</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Motivo de consulta (opcional)</label>
+					<textarea class="form-control" name="motivo" id="appointmentReason" rows="4"
+						placeholder="Describe brevemente el motivo de tu consulta..."></textarea>
+				</div>
+
+				<div class="price-summary">
+					<span>Precio de consulta:</span>
+					<span class="price-amount" id="consultationPrice">S/ 0.00</span>
+				</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-secondary" id="cancelAppointment" type="button">Cancelar</button>
+			<button class="btn btn-primary" id="confirmAppointment" type="button">Confirmar Cita</button>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+	// Pasar disponibilidades de Django a JavaScript
+	const profesionalesData = [
+		{% for p in profesionales %}
+		{
+			id: {{ p.id }},
+			nombre: "{{ p.nombre|escapejs }}",
+			especialidad: "{{ p.especialidad|escapejs }}",
+			foto: "{{ p.foto|escapejs }}",
+			permite_presencial: {{ p.opciones.presencial|yesno:"true,false" }},
+			permite_online: {{ p.opciones.online|yesno:"true,false" }},
+			precio_presencial: {{ p.opciones.precio_presencial|default:"0" }},
+			precio_online: {{ p.opciones.precio_online|default:"0" }},
+			disponibilidades: {{ p.disponibilidad_completa|safe }}
+		}{% if not forloop.last %},{% endif %}
+		{% endfor %}
+	];
+</script>
+<script src="{% static 'cliente/js/profesionales.js' %}"></script>
+{% endblock %}
