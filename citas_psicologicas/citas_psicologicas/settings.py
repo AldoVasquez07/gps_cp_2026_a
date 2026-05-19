@@ -53,9 +53,9 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'citas_psicologicas.wsgi.app'
+WSGI_APPLICATION = 'citas_psicologicas.wsgi.app'
 
-# AUTH_USER_MODEL = 'sistema.Usuario'
+AUTH_USER_MODEL = 'sistema.Usuario'
 
 DATABASES = {
     'default': {
