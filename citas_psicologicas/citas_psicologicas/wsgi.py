@@ -2,7 +2,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'citas_profesionales.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'citas_psicologicas.settings')
 
 application = get_wsgi_application()
 
