@@ -1,0 +1,110 @@
+{% extends 'profesional/base_home.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'profesional/css/productividad_ingresos.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- MAIN -->
+<main>
+	<div class="productividad-container">
+		<h1 class="page-title">Eficiencia e ingresos totales</h1>
+
+		<div class="content-grid">
+			<!-- Gráfica -->
+			<div class="chart-section">
+				<div class="chart-container">
+					<canvas id="eficienciaChart"></canvas>
+				</div>
+			</div>
+
+			<!-- Stats Cards -->
+			<div class="stats-section">
+				<!-- Citas Presenciales/Online -->
+				<div class="stat-card pink-card">
+					<div class="stat-icon">
+						<i class='bx bx-calendar'></i>
+					</div>
+					<div class="stat-content">
+						<div class="stat-values">
+							<div class="stat-value-item">
+								<span class="stat-number">{{ citas_presenciales }}</span>
+								<span class="stat-label">Presenciales</span>
+							</div>
+							<div class="stat-value-item">
+								<span class="stat-number">{{ citas_online }}</span>
+								<span class="stat-label">Online</span>
+							</div>
+						</div>
+						<div class="stat-title">Citas</div>
+					</div>
+				</div>
+
+				<!-- Contacto con clientes -->
+				<div class="stat-card yellow-card">
+					<div class="stat-icon">
+						<i class='bx bx-group'></i>
+					</div>
+					<div class="stat-content">
+						<div class="stat-number-large">{{ contacto_clientes }}</div>
+						<div class="stat-title">Contacto con clientes</div>
+					</div>
+				</div>
+
+				<!-- Citas agendadas -->
+				<div class="stat-card blue-card">
+					<div class="stat-icon">
+						<i class='bx bx-calendar-check'></i>
+					</div>
+					<div class="stat-content">
+						<div class="stat-number-large">{{ citas_agendadas }}</div>
+						<div class="stat-title">Citas agendadas</div>
+					</div>
+				</div>
+
+				<!-- Citas concretadas -->
+				<div class="stat-card pink-card">
+					<div class="stat-icon">
+						<i class='bx bx-calendar-check'></i>
+					</div>
+					<div class="stat-content">
+						<div class="stat-values">
+							<div class="stat-value-item">
+								<span class="stat-number">{{ concretadas_presenciales }}</span>
+								<span class="stat-label">Presenciales</span>
+							</div>
+							<div class="stat-value-item">
+								<span class="stat-number">{{ concretadas_online }}</span>
+								<span class="stat-label">Online</span>
+							</div>
+						</div>
+						<div class="stat-title">Citas concretadas</div>
+					</div>
+				</div>
+
+				<!-- Conversión de clientes -->
+				<div class="stat-card yellow-card">
+					<div class="stat-icon">
+						<i class='bx bx-trending-up'></i>
+					</div>
+					<div class="stat-content">
+						<div class="stat-number-large">{{ conversion }}%</div>
+						<div class="stat-title">Conversión de clientes</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+
+<!-- Datos para la gráfica (desde Django) -->
+<script id="chart-data" type="application/json">
+{{ chart_data_json|safe }}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="{% static 'profesional/js/productividad_ingresos.js' %}"></script>
+{% endblock %}

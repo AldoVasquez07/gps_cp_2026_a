@@ -1,0 +1,218 @@
+{% extends 'profesional/base_home.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'profesional/css/horarios.css' %}">
+{% endblock %}
+
+{% block content %}
+<main>
+	<!-- Mensajes de éxito/error -->
+	{% if messages %}
+		<div class="messages-container">
+			{% for message in messages %}
+				<div class="alert alert-{{ message.tags }}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+
+	<div class="schedule-container">
+		<div class="schedule-layout">
+			<!-- Left Sidebar -->
+			<div class="schedule-sidebar">
+				<h2 class="sidebar-title">Configuración de Horarios</h2>
+
+				<!-- Aspectos de Negocio -->
+				<div class="config-section">
+					<h3 class="section-title">Aspectos de Negocio</h3>
+					
+					<form method="POST">
+						{% csrf_token %}
+						<input type="hidden" name="accion" value="guardar_aspectos">
+						
+						<div class="form-group">
+							<label>Dirección</label>
+							<input type="text" name="direccion" class="form-control" 
+								   placeholder="Dirección del consultorio"
+								   value="{{ aspectos_negocio.direccion|default:'' }}">
+						</div>
+
+						<div class="form-group">
+							<label>Horario General</label>
+							<div class="time-inputs">
+								<input type="time" name="hora_apertura" class="form-control"
+									   value="{{ aspectos_negocio.hora_apertura|time:'H:i'|default:'' }}">
+								<span>a</span>
+								<input type="time" name="hora_cierre" class="form-control"
+									   value="{{ aspectos_negocio.hora_cierre|time:'H:i'|default:'' }}">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="checkbox-label">
+								<input type="checkbox" name="permite_presencial" 
+									   {% if aspectos_negocio.permite_presencial %}checked{% endif %}
+									   onchange="togglePrecio('presencial', this.checked)">
+								<span>Permitir citas presenciales</span>
+							</label>
+						</div>
+
+						{% if aspectos_negocio.permite_presencial %}
+						<div class="form-group" id="precio_presencial_group">
+						{% else %}
+						<div class="form-group d-none" id="precio_presencial_group">
+						{% endif %}
+							<label>Precio Presencial (S/.)</label>
+							<input type="number" name="precio_presencial" class="form-control" 
+								step="0.01" min="0"
+								value="{{ aspectos_negocio.precio_presencial|default:'' }}">
+						</div>
+						<div class="form-group">
+							<label class="checkbox-label">
+								<input type="checkbox" name="permite_virtual"
+									   {% if aspectos_negocio.permite_virtual %}checked{% endif %}
+									   onchange="togglePrecio('online', this.checked)">
+								<span>Permitir citas virtuales</span>
+							</label>
+						</div>
+
+						{% if aspectos_negocio.permite_virtual %}
+						<div class="form-group" id="precio_online_group">
+						{% else %}
+						<div class="form-group d-none" id="precio_online_group">
+						{% endif %}
+							<label>Precio Online (S/.)</label>
+							<input type="number" name="precio_online" class="form-control" 
+								step="0.01" min="0"
+								value="{{ aspectos_negocio.precio_online|default:'' }}">
+						</div>
+
+						<button type="submit" class="btn btn-primary btn-block">
+							<i class='bx bx-save'></i>
+							<span>Guardar Configuración</span>
+						</button>
+					</form>
+				</div>
+
+				<!-- Horarios por Día -->
+				<div class="config-section">
+					<h3 class="section-title">Horarios por Día</h3>
+					
+					<form method="POST">
+						{% csrf_token %}
+						<input type="hidden" name="accion" value="guardar_disponibilidad">
+						
+						<div class="form-group">
+							<label>Día de la semana</label>
+							<select name="dia" class="form-control" required>
+								<option value="">Seleccionar día</option>
+								<option value="lunes">Lunes</option>
+								<option value="martes">Martes</option>
+								<option value="miércoles">Miércoles</option>
+								<option value="jueves">Jueves</option>
+								<option value="viernes">Viernes</option>
+								<option value="sábado">Sábado</option>
+								<option value="domingo">Domingo</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>Horario</label>
+							<div class="time-inputs">
+								<input type="time" name="hora_inicio" class="form-control" required>
+								<span>a</span>
+								<input type="time" name="hora_fin" class="form-control" required>
+							</div>
+						</div>
+
+						<button type="submit" class="btn btn-primary btn-block">
+							<i class='bx bx-plus'></i>
+							<span>Agregar Horario</span>
+						</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Main Schedule View -->
+			<div class="schedule-main">
+				<div class="schedule-header">
+					<h2>Horarios Disponibles</h2>
+					<p class="text-muted">Configura tus horarios de atención por día</p>
+				</div>
+
+				<div class="disponibilidades-container">
+					{% if disponibilidades %}
+						<div class="disponibilidades-grid">
+							{% for disp in disponibilidades %}
+								<div class="disponibilidad-card">
+									<div class="card-header">
+										<h3 class="dia-nombre">{{ disp.dia|capfirst }}</h3>
+										<form method="POST" style="display: inline;" 
+											  onsubmit="return confirm('¿Estás seguro de eliminar este horario?');">
+											{% csrf_token %}
+											<input type="hidden" name="accion" value="eliminar_disponibilidad">
+											<input type="hidden" name="disponibilidad_id" value="{{ disp.id }}">
+											<button type="submit" class="btn-delete" title="Eliminar">
+												<i class='bx bx-trash'></i>
+											</button>
+										</form>
+									</div>
+									<div class="card-body">
+										<div class="horario-info">
+											<i class='bx bx-time'></i>
+											<span>{{ disp.hora_inicio|time:"H:i" }} - {{ disp.hora_fin|time:"H:i" }}</span>
+										</div>
+										<div class="duracion-info">
+											<i class='bx bx-calendar'></i>
+											<span>
+												{% widthratio disp.hora_fin.hour 1 60 as fin_minutos %}
+												{% widthratio disp.hora_fin.minute 1 1 as fin_min %}
+												{% widthratio disp.hora_inicio.hour 1 60 as inicio_minutos %}
+												{% widthratio disp.hora_inicio.minute 1 1 as inicio_min %}
+												{% with duracion=fin_minutos|add:fin_min|add:inicio_minutos|add:inicio_min %}
+													{% widthratio duracion 60 1 as horas %}
+													{% widthratio duracion 1 1 as total_min %}
+													{% widthratio horas 1 60 as horas_en_min %}
+													{% widthratio total_min|add:horas_en_min 1 -1 as minutos %}
+													{% if horas > 0 %}{{ horas }}h {% endif %}
+													{% if minutos > 0 %}{{ minutos }}min{% endif %}
+												{% endwith %}
+											</span>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div class="empty-state">
+							<i class='bx bx-calendar-x'></i>
+							<h3>No hay horarios configurados</h3>
+							<p>Agrega tus primeros horarios de atención usando el formulario de la izquierda</p>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+
+<script>
+	// Función para mostrar/ocultar campos de precio
+	function togglePrecio(tipo, checked) {
+		const group = document.getElementById('precio_' + tipo + '_group');
+		group.style.display = checked ? 'block' : 'none';
+	}
+
+	// Auto-ocultar mensajes después de 5 segundos
+	setTimeout(function() {
+		const messages = document.querySelector('.messages-container');
+		if (messages) {
+			messages.style.transition = 'opacity 0.5s';
+			messages.style.opacity = '0';
+			setTimeout(() => messages.remove(), 500);
+		}
+	}, 5000);
+</script>
+{% endblock %}

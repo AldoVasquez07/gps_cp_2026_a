@@ -1,115 +1,305 @@
+# profesional/models.py
+# -------------------------------------------------------------
+# Modelos de datos para la aplicación "profesional".
+# Estos modelos representan las profesiones, especialidades
+# y la entidad del profesional dentro del sistema.
+# -------------------------------------------------------------
+
 from django.db import models
-from sistema.models import Especialidad
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
 
-class Profesional(models.Model):
-    """Psicólogo o profesional de salud mental registrado en el sistema"""
- 
-    GENERO_CHOICES = [
-        ('M', 'Masculino'),
-        ('F', 'Femenino'),
-        ('O', 'Otro'),
-    ]
- 
-    MODALIDAD_CHOICES = [
-        ('PRESENCIAL', 'Presencial'),
-        ('VIRTUAL',    'Virtual'),
-        ('AMBAS',      'Presencial y Virtual'),
-    ]
 
-    nombres = models.CharField(max_length=100, verbose_name="Nombres")
-    apellidos = models.CharField(max_length=100, verbose_name="Apellidos")
-    dni = models.CharField(max_length=15, unique=True, verbose_name="DNI / Documento")
-    fecha_nacimiento = models.DateField(verbose_name="Fecha de Nacimiento")
-    genero = models.CharField(max_length=1, choices=GENERO_CHOICES, verbose_name="Género")
 
-    telefono = models.CharField(max_length=20, verbose_name="Teléfono")
-    email = models.EmailField(unique=True, verbose_name="Correo Electrónico")
-
-    codigo_colegiatura = models.CharField(
-        max_Length=30,
-        unique=True,
-        verbose_name="N° de Colegiatura",
-        help_text="Número de registro en el Colegio de Psicólogos",
-    )
-
-    especialidades = models.ManyToManyField(
-        Especialidad,
-        blank=True,
-        verbose_name="Especialidades",
-        related_name="profesionales",
-    )
-    anos_experiencia = models.PositiveSmallIntegerField(
-        default=0,
-        verbose_name="Años de Experiencia",
-    )
-    modalidad_atencion = models.CharField(
-        max_length=10,
-        choices=MODALIDAD_CHOICES,
-        default='PRESENCIAL',
-        verbose_name="Modalidad de Atención",
-    )
-
-    duracion_cita_minutos = models.PositiveSmallIntegerField(
-        default=60,
-        verbose_name="Duración de Cita (min)",
-        help_text="Duración estándar de cada sesión en minutos",
-    )
-    tarifa_sesion = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
+class Profesion(models.Model):
+    """
+    Representa una profesión general
+    a la que pueden pertenecer distintas especialidades.
+    """
+    nombre = models.TextField(max_length=150, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name="Tarifa por Sesión (S/)",
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+    
+    flag = models.BooleanField(default=True, help_text="Indica si el registro está activo o no.")
+
+    def __str__(self):
+        """Devuelve una representación legible de la profesión."""
+        return self.nombre
+
+
+class Especialidad(models.Model):
+    """
+    Representa una especialidad dentro de una profesión específica.
+    """
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    profesion = models.ForeignKey(
+        Profesion,
+        on_delete=models.CASCADE,
+        related_name='especialidades',
+        null=True,
+        help_text="Profesión a la que pertenece esta especialidad."
+    )
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+    
+    flag = models.BooleanField(default=True, help_text="Indica si la especialidad está activa.")
+
+    def __str__(self):
+        """Devuelve el nombre de la especialidad."""
+        return self.nombre
+
+
+class Profesional(models.Model):
+    """
+    Representa al usuario profesional del sistema.
+    Se vincula a su usuario base, a su especialidad y a los aspectos de negocio registrados.
+    """
+    usuario = models.OneToOneField(
+        'sistema.Usuario',
+        on_delete=models.CASCADE,
+        related_name='profesional',
+        help_text="Referencia al usuario asociado (modelo Usuario)."
+    )
+    especialidad = models.ForeignKey(
+        Especialidad,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='profesionales',
+        help_text="Especialidad que ejerce el profesional."
+    )
+    aspectos_negocio = models.ForeignKey(
+        'sistema.AspectosNegocio',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='profesionales',
+        help_text="Aspectos de negocio relacionados con este profesional."
+    )
+    organizacion = models.ForeignKey(
+        'organizacion.Organizacion',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='profesionales',
+        help_text="Organización o institución a la que pertenece el profesional."
+    )
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+    
+    flag = models.BooleanField(default=True, help_text="Indica si el profesional está activo en el sistema.")
+
+    def __str__(self):
+        """
+        Retorna una representación legible del profesional,
+        combinando su nombre y apellido paterno.
+        """
+        return f'Profesional: {self.usuario.first_name} {self.usuario.apellido_paterno}'
+
+
+class ProfesionalCliente(models.Model):
+    profesional = models.ForeignKey(
+        'profesional.Profesional',
+        on_delete=models.CASCADE,
+        related_name='relaciones_cliente'
+    )
+    cliente = models.ForeignKey(
+        'cliente.Cliente',
+        on_delete=models.CASCADE,
+        related_name='relaciones_profesional'
+    )
+    fecha_inicio = models.DateField(auto_now_add=True)
+    estado = models.CharField(
+        max_length=50,
+        default='activo',
+        help_text='Estado de la relación (activo, finalizado, suspendido, etc.)'
+    )
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    class Meta:
+        unique_together = ('profesional', 'cliente')
+        verbose_name = 'Relación Profesional-Cliente'
+        verbose_name_plural = 'Relaciones Profesionales-Clientes'
+
+    def __str__(self):
+        return f'{self.profesional} ↔ {self.cliente}'
+
+
+class Mensaje(models.Model):
+    relacion = models.ForeignKey(
+        'profesional.ProfesionalCliente',
+        on_delete=models.CASCADE,
+        related_name='mensajes'
+    )
+    emisor = models.CharField(
+        max_length=20,
+        choices=[('profesional', 'Profesional'), ('cliente', 'Cliente')]
+    )
+    contenido = models.TextField()
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    class Meta:
+        ordering = ['-fecha_envio']
+
+    def __str__(self):
+        return f'Mensaje de {self.emisor} ({self.fecha_envio:%Y-%m-%d %H:%M})'
+
+
+
+class Cita(models.Model):
+    relacion = models.ForeignKey(
+        'profesional.ProfesionalCliente',
+        on_delete=models.CASCADE,
+        related_name='citas',
+        help_text="Relación profesional-cliente a la que pertenece esta cita."
+    )
+    fecha = models.DateTimeField(help_text="Fecha y hora programada de la cita.")
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('pendiente', 'Pendiente'),
+            ('confirmada', 'Confirmada'),
+            ('completada', 'Completada'),
+            ('cancelada', 'Cancelada')
+        ],
+        default='pendiente'
+    )
+    motivo = models.TextField(blank=True, null=True, help_text="Motivo o descripción de la cita.")
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    calificacion_profesional = models.DecimalField(
+        max_digits=2,          # 5.0 → 2 dígitos totales
+        decimal_places=1,      # un decimal
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+        ],
+        null=True,
+        blank=True
     )
 
-    activo = models.BooleanField(default=True, verbose_name="Profesional Activo")
-    fecha_registro = models.DateField(auto_now_add=True, verbose_name="Fecha de Registro")
- 
-    class Meta:
-        verbose_name = "Profesional"
-        verbose_name_plural = "Profesionales"
-        ordering = ['apellidos', 'nombres']
- 
-    def __str__(self):
-        return f"{self.apellidos}, {self.nombres} — Colegiatura: {self.codigo_colegiatura}"
- 
-    @property
-    def nombre_completo(self):
-        return f"{self.nombres} {self.apellidos}"
-    
-class HorarioDisponible(models.Model):
-    """Franjas horarias semanales en que un profesional atiende citas"""
- 
-    DIA_CHOICES = [
-        (0, 'Lunes'),
-        (1, 'Martes'),
-        (2, 'Miércoles'),
-        (3, 'Jueves'),
-        (4, 'Viernes'),
-        (5, 'Sábado'),
-        (6, 'Domingo'),
-    ]
- 
-    profesional = models.ForeignKey(
-        Profesional,
-        on_delete=models.CASCADE,
-        related_name='horarios',
-        verbose_name="Profesional",
+    calificacion_cliente = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+        ],
+        null=True,
+        blank=True
     )
-    dia_semana = models.PositiveSmallIntegerField(choices=DIA_CHOICES, verbose_name="Día de la Semana")
-    hora_inicio = models.TimeField(verbose_name="Hora de Inicio")
-    hora_fin = models.TimeField(verbose_name="Hora de Fin")
-    activo = models.BooleanField(default=True, verbose_name="Activo")
- 
+    
+    # Auditoría
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created"
+    )
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_modified"
+    )
+    modified_date = models.DateTimeField(null=True, blank=True, auto_now=True)
+
     class Meta:
-        verbose_name = "Horario Disponible"
-        verbose_name_plural = "Horarios Disponibles"
-        ordering = ['profesional', 'dia_semana', 'hora_inicio']
-        unique_together = ('profesional', 'dia_semana', 'hora_inicio')
- 
+        ordering = ['-fecha']
+        verbose_name = "Cita"
+        verbose_name_plural = "Citas"
+
     def __str__(self):
-        return (
-            f"{self.profesional.nombre_completo} — "
-            f"{self.get_dia_semana_display()} "
-            f"{self.hora_inicio.strftime('%H:%M')} a {self.hora_fin.strftime('%H:%M')}"
-        )
+        return f'Cita {self.fecha:%Y-%m-%d %H:%M} | {self.relacion}'

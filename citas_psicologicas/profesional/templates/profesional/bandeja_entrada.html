@@ -1,0 +1,110 @@
+{% extends 'profesional/base_home.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'profesional/css/bandeja_entrada.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- MAIN -->
+<main>
+	<div class="bandeja-container">
+		<h1 class="page-title">Bandeja de mensajes</h1>
+
+		<!-- No Gestionados Section -->
+		<div class="messages-section">
+			<h2 class="section-title">
+				No Gestionados
+				{% if total_no_gestionados > 0 %}
+					<span class="badge-count">({{ total_no_gestionados }})</span>
+				{% endif %}
+			</h2>
+			<div class="table-container">
+				<table class="messages-table">
+					<thead>
+						<tr>
+							<th>Consultor</th>
+							<th>Mensaje</th>
+							<th>Mi cliente</th>
+							<th>Fecha y Hora</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if mensajes_no_gestionados %}
+							{% for mensaje in mensajes_no_gestionados %}
+								<tr class="message-row" 
+									data-managed="false" 
+									data-relacion-id="{{ mensaje.relacion_id }}"
+									style="cursor: pointer;">
+									<td>{{ mensaje.cliente_nombre }}</td>
+									<td>{{ mensaje.contenido }}</td>
+									<td>
+										{% if mensaje.es_mi_cliente %}
+											<span class="badge-cliente">Mi cliente</span>
+										{% endif %}
+									</td>
+									<td>{{ mensaje.fecha_envio|date:"d M, H:i" }}</td>
+								</tr>
+							{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="4" style="text-align: center; padding: 2rem; color: #888;">
+									No hay mensajes sin gestionar
+								</td>
+							</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Gestionados Section -->
+		<div class="messages-section">
+			<h2 class="section-title">Gestionados</h2>
+			<div class="table-container">
+				<table class="messages-table">
+					<thead>
+						<tr>
+							<th>Consultor</th>
+							<th>Mensaje</th>
+							<th>Mi cliente</th>
+							<th>Fecha y Hora</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if mensajes_gestionados %}
+							{% for mensaje in mensajes_gestionados %}
+								<tr class="message-row" 
+									data-managed="true" 
+									data-relacion-id="{{ mensaje.relacion_id }}"
+									style="cursor: pointer;">
+									<td>{{ mensaje.cliente_nombre }}</td>
+									<td>{{ mensaje.contenido }}</td>
+									<td>
+										{% if mensaje.es_mi_cliente %}
+											<span class="badge-cliente">Mi cliente</span>
+										{% endif %}
+									</td>
+									<td>{{ mensaje.fecha_envio|date:"d M, H:i" }}</td>
+								</tr>
+							{% endfor %}
+						{% else %}
+							<tr>
+								<td colspan="4" style="text-align: center; padding: 2rem; color: #888;">
+									No hay mensajes gestionados
+								</td>
+							</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</main>
+<!-- MAIN -->
+<!-- CONTENT -->
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'profesional/js/bandeja_mensaje.js' %}"></script>
+{% endblock %}

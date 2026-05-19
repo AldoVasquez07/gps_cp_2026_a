@@ -1,0 +1,148 @@
+{% extends 'profesional/base_home.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'profesional/css/ajustes.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- MAIN -->
+<main>
+	<div class="settings-container">
+		<h1 class="page-title">Ajustes</h1>
+
+		<div class="settings-grid">
+			<!-- Ajustes Generales -->
+			<div class="settings-section">
+				<h2 class="section-title">Ajustes generales</h2>
+
+				<div class="settings-cards">
+					<!-- Agendas Card -->
+					<a href="#" class="setting-card" data-setting="agendas">
+						<div class="card-icon icon-blue">
+							<i class='bx bx-calendar-alt'></i>
+						</div>
+						<div class="card-content">
+							<h3 class="card-title">Agendas</h3>
+							<p class="card-description">Gestiona la configuración de tus agendas.</p>
+						</div>
+						<div class="card-arrow">
+							<i class='bx bx-chevron-right'></i>
+						</div>
+					</a>
+
+					<!-- Servicios Card -->
+					<a href="#" class="setting-card" data-setting="servicios">
+						<div class="card-icon icon-red">
+							<i class='bx bx-briefcase'></i>
+						</div>
+						<div class="card-content">
+							<h3 class="card-title">Servicios</h3>
+							<p class="card-description">Gestiona los servicios que ofreces.</p>
+						</div>
+						<div class="card-arrow">
+							<i class='bx bx-chevron-right'></i>
+						</div>
+					</a>
+				</div>
+			</div>
+
+			<!-- Comunicación con Clientes -->
+			<div class="settings-section">
+				<h2 class="section-title">Comunicación con clientes</h2>
+
+				<div class="settings-cards">
+					<!-- Mensajes Card -->
+					<a href="#" class="setting-card" data-setting="mensajes">
+						<div class="card-icon icon-green">
+							<i class='bx bx-message-square-dots'></i>
+						</div>
+						<div class="card-content">
+							<h3 class="card-title">Mensajes</h3>
+							<p class="card-description">Recibe mensajes de tus clientes.</p>
+						</div>
+						<div class="card-arrow">
+							<i class='bx bx-chevron-right'></i>
+						</div>
+					</a>
+
+					<!-- Notas para Clientes Card -->
+					<a href="#" class="setting-card" data-setting="notas">
+						<div class="card-icon icon-orange">
+							<i class='bx bx-note'></i>
+						</div>
+						<div class="card-content">
+							<h3 class="card-title">Notas para clientes</h3>
+							<p class="card-description">Envía notas a tus clientes antes de sus citas.</p>
+						</div>
+						<div class="card-arrow">
+							<i class='bx bx-chevron-right'></i>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Sección adicional: Configuración de Cuenta -->
+		<div class="account-section">
+			<h2 class="section-title">Configuración de cuenta</h2>
+
+			<div class="account-cards">
+				<!-- Perfil -->
+				<a href="#" class="account-card">
+					<div class="account-icon">
+						<i class='bx bx-user'></i>
+					</div>
+					<div class="account-info">
+						<h4>Perfil profesional</h4>
+						<p>Edita tu información personal y profesional</p>
+					</div>
+					<i class='bx bx-chevron-right'></i>
+				</a>
+
+				<!-- Notificaciones -->
+				<a href="#" class="account-card">
+					<div class="account-icon">
+						<i class='bx bx-bell'></i>
+					</div>
+					<div class="account-info">
+						<h4>Notificaciones</h4>
+						<p>Configura cómo quieres recibir alertas</p>
+					</div>
+					<i class='bx bx-chevron-right'></i>
+				</a>
+
+				<!-- Seguridad -->
+				<a href="#" class="account-card">
+					<div class="account-icon">
+						<i class='bx bx-lock-alt'></i>
+					</div>
+					<div class="account-info">
+						<h4>Seguridad</h4>
+						<p>Contraseña y opciones de seguridad</p>
+					</div>
+					<i class='bx bx-chevron-right'></i>
+				</a>
+
+				<!-- Facturación -->
+				<a href="#" class="account-card">
+					<div class="account-icon">
+						<i class='bx bx-credit-card'></i>
+					</div>
+					<div class="account-info">
+						<h4>Facturación</h4>
+						<p>Gestiona tu plan y métodos de pago</p>
+					</div>
+					<i class='bx bx-chevron-right'></i>
+				</a>
+			</div>
+		</div>
+	</div>
+</main>
+<!-- MAIN -->
+<!-- CONTENT -->
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'profesional/js/ajustes.js' %}"></script>
+{% endblock %}
